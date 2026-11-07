@@ -1,6 +1,6 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { timingSafeEqual } from "node:crypto";
-import { INHOUD_SCHEMA, type ToegankelijkheidAntwoord, type ToegankelijkheidVraag } from "@oa/contract";
+import { INHOUD_SCHEMA, type ToegankelijkheidAntwoord, type ToegankelijkheidVraag } from "@digitaalgemeengoed/oa-contract";
 import { beoordeelHtml, GECONTROLEERD } from "./toegankelijkheid.js";
 
 /**

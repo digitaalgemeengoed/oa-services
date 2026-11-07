@@ -1,6 +1,6 @@
 import { parseFragment, serializeOuter } from "parse5";
 import type { DefaultTreeAdapterMap } from "parse5";
-import type { Bevinding, Plek } from "@oa/contract";
+import type { Bevinding, Plek } from "@digitaalgemeengoed/oa-contract";
 
 type Node = DefaultTreeAdapterMap["node"];
 type Element = DefaultTreeAdapterMap["element"];
