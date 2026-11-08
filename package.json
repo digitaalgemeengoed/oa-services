@@ -1,6 +1,6 @@
 {
   "name": "oa-services",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Assistent-services van de Office Assistent achter de lezende ingang: lezen en rekenen, nooit vastleggen.",
   "license": "EUPL-1.2",

@@ -143,7 +143,13 @@ export function beoordeelHtml(html: string): Bevinding[] {
         }
       }
 
-      if (tag === "u") {
+      // Een onderstreepte link is gewoon een link (LibreOffice en Word zetten
+      // de onderstreping van een link soms als <u> om de <a>).
+      const alleenLink = (n: Element): boolean => {
+        const k = elementKinderen(n);
+        return k.length === 1 && (k[0].tagName === "a" || alleenLink(k[0])) && (k[0].textContent ?? "").trim() === (n.textContent ?? "").trim();
+      };
+      if (tag === "u" && !alleenLink(e)) {
         nieuw({
           ernst: "advies",
           regel: "WCAG 2.2 1.3.1",

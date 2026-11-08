@@ -66,3 +66,9 @@ test("de dienst weigert aanroepen zonder dienstsleutel en beoordeelt html", asyn
   assert.equal(met.json().bevindingen.length, 1);
   await app.close();
 });
+
+test("een onderstreepte link is geen nep-link", async () => {
+  const { beoordeelHtml } = await import("../dist/toegankelijkheid.js");
+  const b = beoordeelHtml('<p>Zie <u><a href="https://x.nl">de begroting 2027</a></u>.</p><p><u>Echt onderstreept</u></p>');
+  assert.equal(b.filter((x) => x.melding.startsWith("Onderstreepte tekst")).length, 1);
+});
