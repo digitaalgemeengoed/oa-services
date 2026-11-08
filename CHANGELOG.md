@@ -1,5 +1,9 @@
 # Wijzigingen
 
+## 0.2.2 — 2026-11-08
+
+Typefout uit 0.2.1 hersteld (de build faalde).
+
 ## 0.2.1 — 2026-11-08
 
 Een onderstreepte link geeft niet langer het advies "onderstreepte tekst lijkt op een link".

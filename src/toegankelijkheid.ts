@@ -147,7 +147,7 @@ export function beoordeelHtml(html: string): Bevinding[] {
       // de onderstreping van een link soms als <u> om de <a>).
       const alleenLink = (n: Element): boolean => {
         const k = elementKinderen(n);
-        return k.length === 1 && (k[0].tagName === "a" || alleenLink(k[0])) && (k[0].textContent ?? "").trim() === (n.textContent ?? "").trim();
+        return k.length === 1 && (k[0].tagName === "a" || alleenLink(k[0])) && tekst(k[0]).trim() === tekst(n).trim();
       };
       if (tag === "u" && !alleenLink(e)) {
         nieuw({
