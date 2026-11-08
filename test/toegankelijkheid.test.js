@@ -72,3 +72,32 @@ test("een onderstreepte link is geen nep-link", async () => {
   const b = beoordeelHtml('<p>Zie <u><a href="https://x.nl">de begroting 2027</a></u>.</p><p><u>Echt onderstreept</u></p>');
   assert.equal(b.filter((x) => x.melding.startsWith("Onderstreepte tekst")).length, 1);
 });
+
+test("presentatie: dia zonder titel, dubbele titel, afbeelding zonder alt; geen kopstructuur", () => {
+  const html =
+    '<section data-oa="dia"><h2>Fietsenstalling</h2><p>Plan</p></section>' +
+    '<section data-oa="dia"><p>Alleen tekst</p><img src="x.png"></section>' +
+    '<section data-oa="dia"><h2>fietsenstalling</h2></section>';
+  const b = beoordeelHtml(html);
+  const geen = b.find((x) => x.regel === "WCAG 2.2 2.4.2");
+  assert.equal(geen.plek.pad, "body/1");
+  assert.equal(geen.plek.beschrijving, "Dia 2");
+  assert.equal(geen.voorstel.vraag.veld, "titel");
+  const alt = b.find((x) => x.regel === "WCAG 2.2 1.1.1");
+  assert.equal(alt.plek.pad, "body/1/1");
+  assert.match(alt.plek.beschrijving, /· Dia 2$/);
+  const dubbel = b.find((x) => x.ernst === "advies");
+  assert.equal(dubbel.plek.pad, "body/2/0");
+  assert.equal(dubbel.voorstel.vraag.veld, "tekst");
+  assert.equal(b.length, 3, "geen regels voor kop 1 of overgeslagen niveaus");
+});
+
+test("rekenblad: standaardnaam, grafiek zonder alt, geen tabelkop-eis", () => {
+  const html =
+    '<section data-oa="blad"><h2>Blad1</h2><table><tr><td>Jaar</td><td>Bedrag</td></tr><tr><td>2026</td><td>10</td></tr></table><img data-oa="grafiek"></section>' +
+    '<section data-oa="blad"><h2>Begroting 2027</h2><table><tr><td>a</td></tr><tr><td>b</td></tr></table></section>';
+  assert.deepEqual(regels(html), ["WCAG 2.2 1.1.1|body/0/2", "WCAG 2.2 2.4.6|body/0/0"]);
+  for (const naam of ["Sheet3", "Tabelle1", "blad 2"]) {
+    assert.equal(beoordeelHtml(`<section data-oa="blad"><h2>${naam}</h2></section>`).length, 1, naam);
+  }
+});

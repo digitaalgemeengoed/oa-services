@@ -14,13 +14,23 @@ type ParentNode = DefaultTreeAdapterMap["parentNode"];
  * Plekken zijn paden van elementindices vanaf de wortel van het document
  * ("body/0/2" = derde element in het eerste element). De adapter vertaalt
  * zo'n pad naar wat de medewerker ziet.
+ *
+ * Een rekenblad of presentatie levert de adapter als reeks secties:
+ * <section data-oa="blad"> met de bladnaam als <h2>, en
+ * <section data-oa="dia"> met de titel van de dia als <h2> (geen <h2> =
+ * geen titel). Daar gelden eigen regels; de kopstructuur van een
+ * tekstdocument niet.
  */
 export const GECONTROLEERD = [
   "WCAG 2.2 1.1.1 Niet-tekstuele content",
   "WCAG 2.2 1.3.1 Info en relaties",
+  "WCAG 2.2 2.4.2 Paginatitel (titels van dia's)",
   "WCAG 2.2 2.4.4 Linkdoel (in context)",
   "WCAG 2.2 2.4.6 Koppen en labels",
 ];
+
+/** Namen die een rekenblad krijgt als niemand het een naam gaf. */
+const STANDAARD_BLADNAAM = /^(blad|sheet|tabel|tabelle|feuil|feuille|hoja|foglio|planilha|arkusz)\s*\d+$/i;
 
 const VAGE_LINKTEKSTEN = new Set(["hier", "klik hier", "klik", "lees meer", "meer", "link", "deze link", "via deze link", "zie hier"]);
 
@@ -68,6 +78,8 @@ export function beoordeelHtml(html: string): Bevinding[] {
   };
 
   const koppen: { niveau: number; e: Element; plek: Plek }[] = [];
+  const dias: { titel: string; pad: string; kopPad: string | null; wie: string }[] = [];
+  const bladen: { titel: string; pad: string; kopPad: string | null; wie: string }[] = [];
   let alineas = 0;
 
   const loop = (ouder: ParentNode, pad: string, beschrijvingOuder: string): void => {
@@ -76,6 +88,23 @@ export function beoordeelHtml(html: string): Bevinding[] {
       const t = tekst(e).replace(/\s+/g, " ").trim();
       const plek = (wat: string): Plek => ({ pad: p, beschrijving: wat + beschrijvingOuder });
       const tag = e.tagName;
+
+      if (tag === "section" && (attr(e, "data-oa") === "dia" || attr(e, "data-oa") === "blad")) {
+        const soort = attr(e, "data-oa")!;
+        const eerste = elementKinderen(e)[0];
+        const titel = eerste && eerste.tagName in KOPNIVEAU ? tekst(eerste).replace(/\s+/g, " ").trim() : "";
+        const nummer = (soort === "dia" ? dias : bladen).length + 1;
+        const wie = soort === "dia" ? `Dia ${nummer}` : `Blad "${kort(titel || String(nummer))}"`;
+        (soort === "dia" ? dias : bladen).push({ titel, pad: p, kopPad: eerste && eerste.tagName in KOPNIVEAU ? `${p}/0` : null, wie });
+        // Binnen een sectie: de plek noemt het blad of de dia.
+        loop(e, p, ` · ${wie}`);
+        return;
+      }
+
+      if (tag in KOPNIVEAU && beschrijvingOuder.startsWith(" · ")) {
+        // De titel van een dia of de naam van een blad: geen kopstructuur.
+        return;
+      }
 
       if (tag in KOPNIVEAU) {
         const pl = plek(`Kop "${kort(t)}"`);
@@ -164,7 +193,9 @@ export function beoordeelHtml(html: string): Bevinding[] {
           elementKinderen(n).forEach((k) => (k.tagName === "tr" ? rijen.push(k) : ["thead", "tbody", "tfoot"].includes(k.tagName) && verzamel(k)));
         verzamel(e);
         const heeftKop = rijen.some((r) => elementKinderen(r).some((c) => c.tagName === "th"));
-        if (!heeftKop && rijen.length > 1) {
+        // In een rekenblad is een bereik cellen geen tabel met een kopregel
+        // die de adapter kan zetten; daar alleen in tekst en dia's.
+        if (!heeftKop && rijen.length > 1 && !beschrijvingOuder.includes(" · Blad ")) {
           nieuw({
             ernst: "fout",
             regel: "WCAG 2.2 1.3.1",
@@ -181,7 +212,46 @@ export function beoordeelHtml(html: string): Bevinding[] {
 
   loop(wortel, "body", "");
 
-  // Kopstructuur
+  // Presentatie: elke dia een titel, en verschillende titels.
+  const gezien = new Map<string, number>();
+  dias.forEach((d, i) => {
+    if (!d.titel) {
+      nieuw({
+        ernst: "fout",
+        regel: "WCAG 2.2 2.4.2",
+        melding: `Dia ${i + 1} heeft geen titel. Met titels vindt een schermlezer zijn weg door de presentatie, en ze vormen de inhoudsopgave.`,
+        plek: { pad: d.kopPad ?? d.pad, beschrijving: `Dia ${i + 1}` },
+        voorstel: { beschrijving: "Geef de dia een titel die zegt waar zij over gaat.", vraag: { label: "Titel van de dia", veld: "titel" } },
+      });
+      return;
+    }
+    const sleutel = d.titel.toLowerCase();
+    if (gezien.has(sleutel)) {
+      nieuw({
+        ernst: "advies",
+        regel: "WCAG 2.2 2.4.6",
+        melding: `Dia ${i + 1} heeft dezelfde titel als dia ${gezien.get(sleutel)! + 1} ("${kort(d.titel)}"). Verschillende titels maken het verschil hoorbaar.`,
+        plek: { pad: d.kopPad ?? d.pad, beschrijving: `Dia ${i + 1}` },
+        voorstel: { beschrijving: "Maak de titel onderscheidend, bijvoorbeeld met (vervolg) of een eigen onderwerp.", vraag: { label: "Titel van de dia", veld: "tekst" } },
+      });
+    } else gezien.set(sleutel, i);
+  });
+
+  // Rekenblad: bladen met een naam die zegt wat erin staat.
+  bladen.forEach((b) => {
+    if (STANDAARD_BLADNAAM.test(b.titel)) {
+      nieuw({
+        ernst: "advies",
+        regel: "WCAG 2.2 2.4.6",
+        melding: `Het blad "${b.titel}" heeft de standaardnaam. Een naam die zegt wat erin staat, helpt bij het navigeren.`,
+        plek: { pad: b.kopPad ?? b.pad, beschrijving: `Blad "${b.titel}"` },
+        voorstel: { beschrijving: "Geef het blad een naam, bijvoorbeeld Begroting 2027.", vraag: { label: "Naam van het blad", veld: "tekst" } },
+      });
+    }
+  });
+  if (dias.length > 0 || bladen.length > 0) return bevindingen;
+
+  // Kopstructuur (tekstdocumenten)
   if (koppen.length === 0 && alineas >= 5) {
     nieuw({
       ernst: "advies",
