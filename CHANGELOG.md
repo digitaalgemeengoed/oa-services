@@ -1,5 +1,9 @@
 # Wijzigingen
 
+## 0.4.2 — 2026-11-09
+
+Volgt oa-contract 0.4.0.
+
 ## 0.4.1 — 2026-11-09
 
 De plaatshouders in de geanonimiseerde weergave volgen het contract: `[PERSOON]`, `[ADRES]`, `[BSN]` …
