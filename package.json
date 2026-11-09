@@ -1,6 +1,6 @@
 {
   "name": "oa-services",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "description": "Assistent-services van de Office Assistent achter de lezende ingang: lezen en rekenen, nooit vastleggen.",
   "license": "EUPL-1.2",
@@ -12,7 +12,7 @@
     "test": "node --test \"test/*.test.js\""
   },
   "dependencies": {
-    "@digitaalgemeengoed/oa-contract": "^0.3.0",
+    "@digitaalgemeengoed/oa-contract": "^0.3.3",
     "fastify": "^5.12.8",
     "parse5": "^8.1.0"
   },

@@ -1,6 +1,6 @@
 import { parseFragment, serialize } from "parse5";
 import type { DefaultTreeAdapterMap } from "parse5";
-import type { AnonimiseerAntwoord, PiiSoort, Plek, Treffer } from "@digitaalgemeengoed/oa-contract";
+import { PII_SOORT, type AnonimiseerAntwoord, type PiiSoort, type Plek, type Treffer } from "@digitaalgemeengoed/oa-contract";
 
 type Node = DefaultTreeAdapterMap["node"];
 type Element = DefaultTreeAdapterMap["element"];
@@ -43,25 +43,8 @@ const VAN_MOTOR: Record<string, PiiSoort> = {
 };
 const ALLE_MOTOR = Object.keys(VAN_MOTOR);
 
-/** Wat er in de geanonimiseerde tekst komt te staan. */
-export const LABEL: Record<PiiSoort, string> = {
-  naam: "[naam]",
-  adres: "[adres]",
-  plaats: "[plaats]",
-  organisatie: "[organisatie]",
-  datum: "[datum]",
-  bsn: "[BSN]",
-  iban: "[IBAN]",
-  telefoon: "[telefoonnummer]",
-  "e-mail": "[e-mailadres]",
-  kenteken: "[kenteken]",
-  zaaknummer: "[zaaknummer]",
-  identiteitsbewijs: "[documentnummer]",
-  rijbewijs: "[rijbewijsnummer]",
-  "kvk-nummer": "[KvK-nummer]",
-  "btw-nummer": "[btw-nummer]",
-  "ip-adres": "[IP-adres]",
-};
+/** Wat er in de geanonimiseerde tekst komt te staan (zonder nummer; het register nummert). */
+export const LABEL = Object.fromEntries(Object.entries(PII_SOORT).map(([k, v]) => [k, `[${v.plaatshouder}]`])) as Record<PiiSoort, string>;
 
 const BLOK = new Set(["p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "td", "th", "caption", "figcaption", "blockquote", "pre", "dt", "dd", "title"]);
 const NIET_LEZEN = new Set(["script", "style", "template"]);

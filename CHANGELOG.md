@@ -1,5 +1,9 @@
 # Wijzigingen
 
+## 0.4.1 — 2026-11-09
+
+De plaatshouders in de geanonimiseerde weergave volgen het contract: `[PERSOON]`, `[ADRES]`, `[BSN]` …
+
 ## 0.4.0 — 2026-11-09
 
 **Anonimiseren.** `POST /anonimiseren` zoekt persoonsgegevens in de html en geeft de platte tekst, de blokken (met plek) en de treffers terug; `POST /anonimiseren/toepassen` schermt de gekozen treffers af en geeft de html en de aantallen per soort terug. Leest en rekent alleen.

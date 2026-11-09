@@ -65,8 +65,8 @@ test("afschermen: ook over opmaak heen; de opmaak blijft", async () => {
   const r = pasToe(HTML, a.treffers.filter((t) => t.tekst !== "Sanne de Boer" && t.soort !== "adres" || t.tekst.startsWith("Kruisweg")));
   assert.equal(
     r.html,
-    '<h1>Besluit op bezwaar</h1><p>Geachte <strong>heer [naam]</strong>,</p><p>U woont op de [adres]. Uw BSN is [BSN].</p>' +
-      "<p>Het college van Burgemeester van Reenensingel 5 tot Haarlem.</p><table><tbody><tr><td>Contact</td><td>Sanne de Boer, [telefoonnummer]</td></tr></tbody></table>",
+    '<h1>Besluit op bezwaar</h1><p>Geachte <strong>heer [PERSOON]</strong>,</p><p>U woont op de [ADRES]. Uw BSN is [BSN].</p>' +
+      "<p>Het college van Burgemeester van Reenensingel 5 tot Haarlem.</p><table><tbody><tr><td>Contact</td><td>Sanne de Boer, [TELEFOON]</td></tr></tbody></table>",
   );
   assert.deepEqual(r.overzicht, { naam: 1, adres: 1, bsn: 1, telefoon: 1 });
 });
