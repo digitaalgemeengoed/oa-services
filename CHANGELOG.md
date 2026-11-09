@@ -1,5 +1,9 @@
 # Wijzigingen
 
+## 0.5.1 — 2026-11-09
+
+Hangt af van oa-contract 0.5.0 (metadatamodellen); verder niets veranderd.
+
 ## 0.5.0 — 2026-11-09
 
 **Toegankelijkheid van het bestand zelf** via [oa-wcag](https://github.com/digitaalgemeengoed/oa-wcag) (34 controles voor docx, xlsx en pptx): titel en taal, contrast, tekstafstand, leesvolgorde en titels van dia's, alt-tekst van grafieken en groepen, tabellen, lijsten, formuliervelden.
