@@ -1,5 +1,9 @@
 # Wijzigingen
 
+## 0.5.2 — 2026-11-09
+
+Hangt af van oa-contract 0.6.0; verder niets veranderd.
+
 ## 0.5.1 — 2026-11-09
 
 Hangt af van oa-contract 0.5.0 (metadatamodellen); verder niets veranderd.
