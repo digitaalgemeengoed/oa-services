@@ -23,11 +23,22 @@ Een plek is een pad van elementindices, bijvoorbeeld `body/4/0`. De adapter vert
 
 Alleen de integratielaag mag de dienst aanroepen (gedeelde dienstsleutel).
 
+## Anonimiseren
+
+`POST /anonimiseren` zoekt persoonsgegevens in een html-document. Het antwoord bevat de platte tekst (per blok, gescheiden door een lege regel), waar elk blok in het document staat, en de treffers: soort, tekst, positie, zekerheid en bron (model of patroon). `POST /anonimiseren/toepassen` krijgt de treffers die de medewerker heeft gekozen en geeft de html terug met die gegevens vervangen door `[naam]`, `[adres]`, `[BSN]` enzovoort, met de opmaak intact. Vastleggen doet het platform, na bevestiging.
+
+De herkenning komt van [OpenAnonymiser](https://github.com/ConductionNL/anonymiq-light) van Conduction (EUPL-1.2): Presidio met spaCy `nl_core_news_lg` en Nederlandse patronen. Deze dienst roept het aan op `OPENANONYMISER_URL` en voegt eigen patronen voor adressen toe, haalt de aanhef uit namen en ruimt overlap op.
+
+| Soort | Standaard afgeschermd |
+|---|---|
+| naam, adres, BSN, IBAN, telefoon, e-mail, kenteken, zaaknummer | ja |
+| plaats, organisatie, datum, documentnummer, rijbewijs, KvK, btw, IP-adres | nee (de medewerker kan ze aanzetten) |
+
 ## Gebruik
 
 ```
 npm run build
-DIENSTEN_DIENSTSLEUTEL=... npm start      # poort 4200
+DIENSTEN_DIENSTSLEUTEL=... OPENANONYMISER_URL=http://localhost:8080 npm start      # poort 4200
 npm test
 ```
 
