@@ -21,12 +21,16 @@ import {
 } from "@digitaalgemeengoed/oa-contract";
 import { beoordeelHtml, GECONTROLEERD } from "./toegankelijkheid.js";
 import { analyseer, LABEL, MotorNietBeschikbaar, pasToe, type Motor } from "./anonimiseren.js";
+import { voegSamen, type BestandsControle } from "./wcag.js";
+
+/** Hetzelfde schema als de inhoud, zonder $id (één schema mag maar één keer met dat $id voorkomen). */
+const { $id: _inhoudId, ...BESTAND_SCHEMA } = INHOUD_SCHEMA;
 
 /**
  * Assistent-services achter de lezende ingang. Lezen en rekenen, nooit
  * vastleggen: deze dienst heeft geen database en geen opslag.
  */
-export function bouwServer(opties: { dienstsleutel: string; log?: boolean; anonimiseer?: Motor | null }): FastifyInstance {
+export function bouwServer(opties: { dienstsleutel: string; log?: boolean; anonimiseer?: Motor | null; bestandsControle?: BestandsControle | null }): FastifyInstance {
   const app = Fastify({ logger: opties.log ?? true, bodyLimit: 30 * 1024 * 1024 });
   const sleutel = Buffer.from(opties.dienstsleutel);
 
@@ -42,11 +46,13 @@ export function bouwServer(opties: { dienstsleutel: string; log?: boolean; anoni
 
   app.post<{ Body: ToegankelijkheidVraag }>(
     "/toegankelijkheid",
-    { schema: { body: { type: "object", required: ["inhoud"], properties: { inhoud: INHOUD_SCHEMA, taal: { type: "string" } } } } },
+    { schema: { body: { type: "object", required: ["inhoud"], properties: { inhoud: INHOUD_SCHEMA, taal: { type: "string" }, bestand: BESTAND_SCHEMA } } } },
     async (req): Promise<ToegankelijkheidAntwoord> => {
-      const { inhoud } = req.body;
+      const { inhoud, bestand } = req.body;
+      // Het bestand zelf (oa-wcag), als het er is en de dienst aanstaat.
+      const vanBestand = bestand && opties.bestandsControle ? await opties.bestandsControle(bestand) : null;
       if (inhoud.formaat !== "html") {
-        return {
+        const alleen: ToegankelijkheidAntwoord = {
           gecontroleerd: [],
           bevindingen: [
             {
@@ -58,8 +64,10 @@ export function bouwServer(opties: { dienstsleutel: string; log?: boolean; anoni
             },
           ],
         };
+        return vanBestand ? voegSamen(alleen, vanBestand) : alleen;
       }
-      return { gecontroleerd: GECONTROLEERD, bevindingen: beoordeelHtml(inhoud.data) };
+      const vanHtml = { gecontroleerd: GECONTROLEERD, bevindingen: beoordeelHtml(inhoud.data) };
+      return vanBestand ? voegSamen(vanHtml, vanBestand) : vanHtml;
     },
   );
 
