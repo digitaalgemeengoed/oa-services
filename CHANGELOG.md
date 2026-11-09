@@ -1,5 +1,9 @@
 # Wijzigingen
 
+## 0.4.3 — 2026-11-09
+
+`/gezondheid` noemt de versie van de diensten (voor de overzichtspagina).
+
 ## 0.4.2 — 2026-11-09
 
 Volgt oa-contract 0.4.0.

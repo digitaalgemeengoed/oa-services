@@ -1,5 +1,15 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { timingSafeEqual } from "node:crypto";
+import { readFileSync } from "node:fs";
+
+/** De eigen versie, voor /gezondheid (de overzichtspagina toont welke versie draait). */
+const VERSIE = (() => {
+  try {
+    return (JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version?: string }).version ?? "onbekend";
+  } catch {
+    return "onbekend";
+  }
+})();
 import {
   INHOUD_SCHEMA,
   type AnonimiseerAntwoord,
@@ -28,7 +38,7 @@ export function bouwServer(opties: { dienstsleutel: string; log?: boolean; anoni
     }
   });
 
-  app.get("/gezondheid", async () => ({ status: "ok" }));
+  app.get("/gezondheid", async () => ({ status: "ok", versie: VERSIE }));
 
   app.post<{ Body: ToegankelijkheidVraag }>(
     "/toegankelijkheid",
